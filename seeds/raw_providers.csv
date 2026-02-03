@@ -1,0 +1,12 @@
+npi,provider_first_name,provider_last_name,credential,specialty,practice_name,address_line_1,city,state,zip_code,phone,accepting_new_patients,updated_at
+1234567890,James,Wilson,MD,Internal Medicine,Boston Medical Associates,100 Medical Center Dr,Boston,MA,02115,617-555-0101,true,2023-01-01
+1234567890,James,Wilson,MD,Internal Medicine,Cambridge Health Partners,200 Health Way,Cambridge,MA,02139,617-555-0102,true,2024-01-15
+1234567891,Sarah,Chen,MD,Cardiology,Heart Care Specialists,150 Cardiac Blvd,Worcester,MA,01605,508-555-0201,true,2023-01-01
+1234567892,Michael,Brown,DO,Family Medicine,Family Health Center,300 Family Rd,Springfield,MA,01107,413-555-0301,true,2023-01-01
+1234567893,Emily,Davis,MD,Orthopedics,Orthopedic & Sports Medicine,400 Bone St,Lowell,MA,01854,978-555-0401,true,2023-01-01
+1234567894,Robert,Martinez,MD,Psychiatry,Mind Wellness Center,500 Mental Health Ave,Cambridge,MA,02142,617-555-0501,true,2023-01-01
+1234567895,Jennifer,Lee,MD,Gastroenterology,Digestive Health Institute,600 GI Parkway,Quincy,MA,02171,617-555-0601,true,2023-01-01
+1234567896,David,Garcia,MD,Internal Medicine,Somerville Primary Care,700 Primary St,Somerville,MA,02144,617-555-0701,true,2023-01-01
+1234567897,Lisa,Thompson,MD,Neurology,Neuroscience Associates,800 Brain Blvd,Newton,MA,02460,617-555-0801,false,2023-01-01
+1234567898,Christopher,White,DO,Dermatology,Skin Health Clinic,900 Derma Dr,Brookline,MA,02446,617-555-0901,true,2023-01-01
+1234567899,Amanda,Harris,MD,Pulmonology,Lung & Respiratory Center,1000 Pulmonary Pkwy,Medford,MA,02156,781-555-1001,true,2023-01-01

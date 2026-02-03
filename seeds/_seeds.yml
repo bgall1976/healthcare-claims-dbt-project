@@ -1,0 +1,82 @@
+version: 2
+
+seeds:
+  - name: raw_claims
+    description: "Raw healthcare claims data with line-level detail"
+    columns:
+      - name: claim_id
+        description: "Unique identifier for the claim"
+        tests:
+          - not_null
+      - name: line_number
+        description: "Line item number within the claim"
+        tests:
+          - not_null
+      - name: patient_id
+        description: "Foreign key to patient"
+        tests:
+          - not_null
+      - name: provider_npi
+        description: "National Provider Identifier"
+        tests:
+          - not_null
+      - name: diagnosis_code
+        description: "Primary ICD-10 diagnosis code"
+      - name: procedure_code
+        description: "CPT/HCPCS procedure code"
+      - name: billed_amount
+        description: "Amount billed by provider"
+      - name: allowed_amount
+        description: "Amount allowed by payer"
+      - name: paid_amount
+        description: "Amount paid by payer"
+
+  - name: raw_patients
+    description: "Raw patient demographic data - note: contains historical records for SCD Type 2 demo"
+    columns:
+      - name: patient_id
+        description: "Unique patient identifier"
+        tests:
+          - not_null
+      - name: date_of_birth
+        description: "Patient date of birth"
+      - name: gender
+        description: "Patient gender (M/F)"
+      - name: plan_type
+        description: "Insurance plan type (HMO/PPO/EPO)"
+      - name: updated_at
+        description: "Timestamp of last update - used for SCD tracking"
+
+  - name: raw_providers
+    description: "Raw provider data from NPPES and internal sources"
+    columns:
+      - name: npi
+        description: "National Provider Identifier (10 digits)"
+        tests:
+          - not_null
+      - name: specialty
+        description: "Provider medical specialty"
+      - name: updated_at
+        description: "Timestamp of last update - used for SCD tracking"
+
+  - name: ref_icd10_codes
+    description: "ICD-10 diagnosis code reference table"
+    columns:
+      - name: icd10_code
+        description: "ICD-10-CM diagnosis code"
+        tests:
+          - unique
+          - not_null
+      - name: is_chronic
+        description: "Flag indicating if this is a chronic condition"
+
+  - name: ref_cpt_codes
+    description: "CPT procedure code reference table with RVU values"
+    columns:
+      - name: cpt_code
+        description: "CPT/HCPCS procedure code"
+        tests:
+          - unique
+          - not_null
+      - name: is_surgical
+        description: "Flag indicating if this is a surgical procedure"

@@ -1,0 +1,12 @@
+patient_id,first_name,last_name,date_of_birth,gender,address_line_1,city,state,zip_code,plan_type,plan_name,member_id,effective_date,term_date,updated_at
+P001,John,Smith,1965-03-15,M,123 Main St,Boston,MA,02101,HMO,Blue Cross HMO,MEM001,2022-01-01,,2023-01-01
+P001,John,Smith,1965-03-15,M,456 Oak Ave,Cambridge,MA,02139,PPO,Blue Cross PPO,MEM001,2022-01-01,,2024-03-15
+P002,Mary,Johnson,1978-07-22,F,789 Elm St,Worcester,MA,01601,PPO,Aetna PPO,MEM002,2022-01-01,,2023-01-01
+P003,Robert,Williams,1982-11-08,M,321 Pine Rd,Springfield,MA,01103,HMO,United HMO,MEM003,2022-01-01,,2023-01-01
+P004,Sarah,Brown,1990-04-30,F,654 Cedar Ln,Lowell,MA,01852,EPO,Cigna EPO,MEM004,2022-01-01,,2023-01-01
+P005,Michael,Davis,1955-09-12,M,987 Birch St,Cambridge,MA,02140,PPO,Blue Cross PPO,MEM005,2022-01-01,,2023-01-01
+P006,Jennifer,Miller,1968-12-25,F,147 Maple Ave,Quincy,MA,02169,HMO,Harvard Pilgrim HMO,MEM006,2022-01-01,,2023-01-01
+P007,David,Wilson,1985-06-18,M,258 Walnut St,Somerville,MA,02143,PPO,Aetna PPO,MEM007,2022-01-01,,2023-01-01
+P008,Lisa,Moore,1972-02-14,F,369 Cherry Dr,Newton,MA,02458,HMO,Tufts HMO,MEM008,2022-01-01,,2023-01-01
+P009,James,Taylor,1995-08-05,M,741 Spruce Way,Brookline,MA,02445,EPO,United EPO,MEM009,2022-01-01,,2023-01-01
+P010,Emily,Anderson,2010-01-20,F,852 Ash Ct,Medford,MA,02155,HMO,Blue Cross HMO,MEM010,2022-01-01,,2023-01-01

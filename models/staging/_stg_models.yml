@@ -1,0 +1,80 @@
+version: 2
+
+models:
+  - name: stg_claims
+    description: "Staged claims data with standardized column names and basic cleaning"
+    columns:
+      - name: claim_id
+        description: "Unique claim identifier"
+        tests:
+          - not_null
+      - name: line_number
+        description: "Line item number within claim"
+        tests:
+          - not_null
+      - name: claim_line_id
+        description: "Composite key: claim_id + line_number"
+        tests:
+          - unique
+          - not_null
+      - name: patient_id
+        description: "Foreign key to patient"
+        tests:
+          - not_null
+      - name: provider_npi
+        description: "Provider NPI"
+        tests:
+          - not_null
+      - name: billed_amount_cents
+        description: "Billed amount in cents (integer)"
+      - name: paid_amount_cents
+        description: "Paid amount in cents (integer)"
+
+  - name: stg_patients
+    description: "Staged patient data with most recent record per patient"
+    columns:
+      - name: patient_id
+        description: "Unique patient identifier"
+        tests:
+          - unique
+          - not_null
+      - name: date_of_birth
+        description: "Patient DOB"
+        tests:
+          - not_null
+      - name: gender
+        description: "Patient gender"
+        tests:
+          - accepted_values:
+              values: ['M', 'F', 'U']
+
+  - name: stg_providers
+    description: "Staged provider data with most recent record per NPI"
+    columns:
+      - name: npi
+        description: "National Provider Identifier"
+        tests:
+          - unique
+          - not_null
+      - name: specialty
+        description: "Provider specialty"
+        tests:
+          - not_null
+
+  - name: stg_diagnoses
+    description: "Staged ICD-10 diagnosis codes"
+    columns:
+      - name: diagnosis_code
+        description: "ICD-10 code"
+        tests:
+          - unique
+          - not_null
+
+  - name: stg_procedures
+    description: "Staged CPT procedure codes"
+    columns:
+      - name: procedure_code
+        description: "CPT/HCPCS code"
+        tests:
+          - unique
+          - not_null

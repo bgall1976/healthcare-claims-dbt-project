@@ -1,0 +1,39 @@
+version: 2
+
+models:
+  - name: fct_patient_risk_profile
+    description: "ML-ready patient risk features for predictive modeling"
+    columns:
+      - name: patient_id
+        description: "Unique patient identifier"
+        tests:
+          - unique
+          - not_null
+      - name: chronic_condition_count
+        description: "Number of unique chronic conditions"
+      - name: total_claims_12m
+        description: "Total claims in last 12 months"
+      - name: total_paid_12m
+        description: "Total paid amount in last 12 months"
+
+  - name: fct_provider_quality_metrics
+    description: "Provider performance metrics for quality analysis"
+    columns:
+      - name: npi
+        description: "National Provider Identifier"
+        tests:
+          - unique
+          - not_null
+      - name: total_patients_served
+        description: "Distinct patient count"
+      - name: avg_cost_per_claim
+        description: "Average paid amount per claim"
+
+  - name: fct_utilization_summary
+    description: "Healthcare utilization summary by time period"
+    columns:
+      - name: summary_key
+        description: "Composite key for grain"
+        tests:
+          - unique
+          - not_null

@@ -1,0 +1,79 @@
+name: 'healthcare_claims_dw'
+version: '1.0.0'
+config-version: 2
+
+profile: 'healthcare_claims'
+
+model-paths: ["models"]
+analysis-paths: ["analyses"]
+test-paths: ["tests"]
+seed-paths: ["seeds"]
+macro-paths: ["macros"]
+snapshot-paths: ["snapshots"]
+
+clean-targets:
+  - "target"
+  - "dbt_packages"
+
+vars:
+  # Date range for synthetic data generation
+  start_date: '2022-01-01'
+  end_date: '2024-12-31'
+  
+  # Toggle for production vs demo mode
+  is_demo: true
+
+models:
+  healthcare_claims_dw:
+    +materialized: view
+    
+    staging:
+      +materialized: view
+      +schema: staging
+      +tags: ['staging']
+      
+    intermediate:
+      +materialized: ephemeral
+      +tags: ['intermediate']
+      
+    marts:
+      core:
+        +materialized: table
+        +schema: marts
+        +tags: ['core', 'marts']
+        
+      features:
+        +materialized: table
+        +schema: features
+        +tags: ['features', 'ml']
+
+seeds:
+  healthcare_claims_dw:
+    +schema: raw
+    raw_claims:
+      +column_types:
+        claim_id: varchar(50)
+        patient_id: varchar(50)
+        provider_npi: varchar(10)
+        service_date: date
+        paid_date: date
+        billed_amount: decimal(12,2)
+        allowed_amount: decimal(12,2)
+        paid_amount: decimal(12,2)
+    raw_patients:
+      +column_types:
+        patient_id: varchar(50)
+        date_of_birth: date
+        zip_code: varchar(10)
+    raw_providers:
+      +column_types:
+        npi: varchar(10)
+        zip_code: varchar(10)
+
+snapshots:
+  healthcare_claims_dw:
+    +target_schema: snapshots
+
+tests:
+  healthcare_claims_dw:
+    +severity: warn

@@ -1,0 +1,16 @@
+icd10_code,description,category,chapter,is_chronic
+E11.9,Type 2 diabetes mellitus without complications,Diabetes,Endocrine,true
+I10,Essential (primary) hypertension,Hypertension,Circulatory,true
+J06.9,Acute upper respiratory infection unspecified,Respiratory Infection,Respiratory,false
+M54.5,Low back pain,Musculoskeletal,Musculoskeletal,false
+F32.9,Major depressive disorder single episode unspecified,Depression,Mental Health,true
+K21.0,Gastro-esophageal reflux disease with esophagitis,GERD,Digestive,true
+N39.0,Urinary tract infection site not specified,UTI,Genitourinary,false
+G43.909,Migraine unspecified not intractable without status migrainosus,Migraine,Nervous System,true
+L30.9,Dermatitis unspecified,Dermatitis,Skin,false
+J45.909,Unspecified asthma uncomplicated,Asthma,Respiratory,true
+J18.9,Pneumonia unspecified organism,Pneumonia,Respiratory,false
+Z00.00,Encounter for general adult medical examination without abnormal findings,Preventive,Factors Influencing Health,false
+Z23,Encounter for immunization,Preventive,Factors Influencing Health,false
+R05.9,Cough unspecified,Symptoms,Symptoms Signs,false
+R51.9,Headache unspecified,Symptoms,Symptoms Signs,false

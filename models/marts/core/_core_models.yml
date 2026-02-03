@@ -1,0 +1,113 @@
+version: 2
+
+models:
+  - name: dim_date
+    description: "Date dimension table with calendar attributes"
+    columns:
+      - name: date_key
+        description: "Surrogate key in YYYYMMDD format"
+        tests:
+          - unique
+          - not_null
+      - name: full_date
+        description: "Full date value"
+        tests:
+          - unique
+          - not_null
+
+  - name: dim_patient
+    description: "Patient dimension with SCD Type 2 history from snapshots"
+    columns:
+      - name: patient_key
+        description: "Surrogate key for dimension"
+        tests:
+          - unique
+          - not_null
+      - name: patient_id
+        description: "Natural key - business identifier"
+        tests:
+          - not_null
+      - name: is_current
+        description: "Flag indicating current record"
+        tests:
+          - not_null
+
+  - name: dim_provider
+    description: "Provider dimension with SCD Type 2 history"
+    columns:
+      - name: provider_key
+        description: "Surrogate key for dimension"
+        tests:
+          - unique
+          - not_null
+      - name: npi
+        description: "National Provider Identifier - natural key"
+        tests:
+          - not_null
+
+  - name: dim_procedure
+    description: "Procedure dimension based on CPT codes"
+    columns:
+      - name: procedure_key
+        description: "Surrogate key"
+        tests:
+          - unique
+          - not_null
+      - name: procedure_code
+        description: "CPT/HCPCS code"
+        tests:
+          - unique
+          - not_null
+
+  - name: dim_diagnosis
+    description: "Diagnosis dimension based on ICD-10 codes"
+    columns:
+      - name: diagnosis_key
+        description: "Surrogate key"
+        tests:
+          - unique
+          - not_null
+      - name: diagnosis_code
+        description: "ICD-10 code"
+        tests:
+          - unique
+          - not_null
+
+  - name: fact_claims
+    description: "Claims fact table at line-item grain"
+    columns:
+      - name: claim_key
+        description: "Surrogate key for fact"
+        tests:
+          - unique
+          - not_null
+      - name: claim_line_id
+        description: "Natural key"
+        tests:
+          - unique
+          - not_null
+      - name: patient_key
+        description: "FK to dim_patient"
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_patient')
+              field: patient_key
+              config:
+                where: "is_current = true"
+      - name: provider_key
+        description: "FK to dim_provider"
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_provider')
+              field: provider_key
+              config:
+                where: "is_current = true"
+      - name: paid_amount
+        description: "Amount paid in dollars"
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              min_value: 0
+              inclusive: true

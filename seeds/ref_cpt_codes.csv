@@ -1,0 +1,16 @@
+cpt_code,description,category,is_surgical,rvu_work,rvu_facility,rvu_malpractice
+99212,Office visit established patient level 2,E&M,false,0.93,0.46,0.03
+99213,Office visit established patient level 3,E&M,false,1.60,0.83,0.05
+99214,Office visit established patient level 4,E&M,false,2.60,1.32,0.08
+99215,Office visit established patient level 5,E&M,false,3.50,1.81,0.11
+82947,Glucose blood test,Lab,false,0.00,0.00,0.00
+83036,Hemoglobin A1c,Lab,false,0.00,0.00,0.00
+93000,Electrocardiogram complete,Cardiology,false,0.17,0.26,0.01
+80053,Comprehensive metabolic panel,Lab,false,0.00,0.00,0.00
+81001,Urinalysis automated with microscopy,Lab,false,0.00,0.00,0.00
+71046,Chest X-ray 2 views,Radiology,false,0.18,0.38,0.02
+72148,MRI lumbar spine without contrast,Radiology,false,1.52,5.28,0.08
+43239,Upper GI endoscopy with biopsy,Surgery,true,3.17,3.91,0.26
+94010,Spirometry,Pulmonology,false,0.17,0.26,0.01
+97110,Therapeutic exercises,Physical Therapy,false,0.45,0.20,0.02
+90834,Psychotherapy 45 minutes,Mental Health,false,1.50,0.50,0.05

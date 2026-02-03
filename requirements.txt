@@ -1,0 +1,18 @@
+# dbt and adapters
+dbt-core>=1.7.0,<2.0.0
+dbt-duckdb>=1.7.0,<2.0.0
+dbt-snowflake>=1.7.0,<2.0.0
+
+# Data generation and testing
+faker>=22.0.0
+pandas>=2.0.0
+numpy>=1.24.0
+
+# Code quality
+sqlfluff>=3.0.0
+sqlfluff-templater-dbt>=3.0.0
+pre-commit>=3.5.0
+
+# Documentation
+mkdocs>=1.5.0
+mkdocs-material>=9.5.0

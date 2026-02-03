@@ -1,0 +1,40 @@
+version: 2
+
+sources:
+  - name: raw
+    description: "Raw source data loaded via dbt seed"
+    schema: "{{ target.schema }}"
+    tables:
+      - name: raw_claims
+        description: "Healthcare claims at line-item grain"
+        columns:
+          - name: claim_id
+            tests:
+              - not_null
+          - name: line_number
+            tests:
+              - not_null
+              
+      - name: raw_patients
+        description: "Patient demographic information"
+        columns:
+          - name: patient_id
+            tests:
+              - not_null
+              
+      - name: raw_providers
+        description: "Healthcare provider information"
+        columns:
+          - name: npi
+            tests:
+              - not_null
+
+  - name: reference
+    description: "Reference/lookup tables"
+    schema: "{{ target.schema }}"
+    tables:
+      - name: ref_icd10_codes
+        description: "ICD-10 diagnosis code descriptions"
+        
+      - name: ref_cpt_codes
+        description: "CPT procedure code descriptions"

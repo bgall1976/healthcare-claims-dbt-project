@@ -1,0 +1,17 @@
+# DuckDB Profile for Local Development
+# Copy this file to ~/.dbt/profiles.yml
+
+healthcare_claims:
+  target: dev
+  outputs:
+    dev:
+      type: duckdb
+      path: 'healthcare_dw.duckdb'
+      schema: main
+      threads: 4
+      
+    ci:
+      type: duckdb
+      path: ':memory:'
+      schema: main
+      threads: 4
