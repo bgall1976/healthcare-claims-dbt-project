@@ -67,26 +67,27 @@ This project builds a complete healthcare claims analytics data warehouse using:
 - Git
 - Basic familiarity with dbt concepts
 
-## 🚀 Quick Start
+## 🚀 Quick Start (Windows)
 
 ### Option A: Local Development with DuckDB (Recommended for Demo)
 
 DuckDB requires no cloud setup and is perfect for demonstrating the project.
 
-```bash
+```cmd
 # 1. Clone the repository
 git clone https://github.com/YOUR_USERNAME/healthcare-claims-dbt-project.git
 cd healthcare-claims-dbt-project
 
 # 2. Create virtual environment
 python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+venv\Scripts\activate
 
 # 3. Install dependencies
 pip install -r requirements.txt
 
-# 4. Set up dbt profile for DuckDB
-cp profiles/profiles_duckdb.yml ~/.dbt/profiles.yml
+# 4. Create .dbt folder and copy profile
+mkdir %USERPROFILE%\.dbt
+copy profiles\profiles_duckdb.yml %USERPROFILE%\.dbt\profiles.yml
 
 # 5. Verify connection
 dbt debug
@@ -105,26 +106,27 @@ dbt docs generate
 dbt docs serve
 ```
 
-### Option B: Snowflake Setup
+### Option B: Snowflake Setup (Windows)
 
-```bash
+```cmd
 # 1. Clone and setup virtual environment (same as above)
 git clone https://github.com/YOUR_USERNAME/healthcare-claims-dbt-project.git
 cd healthcare-claims-dbt-project
 python -m venv venv
-source venv/bin/activate
+venv\Scripts\activate
 pip install -r requirements.txt
 
 # 2. Set environment variables for Snowflake
-export SNOWFLAKE_ACCOUNT='your_account'
-export SNOWFLAKE_USER='your_username'
-export SNOWFLAKE_PASSWORD='your_password'
-export SNOWFLAKE_ROLE='your_role'
-export SNOWFLAKE_WAREHOUSE='your_warehouse'
-export SNOWFLAKE_DATABASE='HEALTHCARE_DW'
+set SNOWFLAKE_ACCOUNT=your_account
+set SNOWFLAKE_USER=your_username
+set SNOWFLAKE_PASSWORD=your_password
+set SNOWFLAKE_ROLE=your_role
+set SNOWFLAKE_WAREHOUSE=your_warehouse
+set SNOWFLAKE_DATABASE=HEALTHCARE_DW
 
-# 3. Copy Snowflake profile
-cp profiles/profiles_snowflake.yml ~/.dbt/profiles.yml
+# 3. Create .dbt folder and copy Snowflake profile
+mkdir %USERPROFILE%\.dbt
+copy profiles\profiles_snowflake.yml %USERPROFILE%\.dbt\profiles.yml
 
 # 4. Create database objects (run in Snowflake)
 # See scripts/snowflake_setup.sql
@@ -134,6 +136,60 @@ dbt debug
 dbt seed
 dbt run
 dbt test
+```
+
+### Alternative: Using PowerShell
+
+If you prefer PowerShell over Command Prompt:
+
+```powershell
+# 1. Clone the repository
+git clone https://github.com/YOUR_USERNAME/healthcare-claims-dbt-project.git
+cd healthcare-claims-dbt-project
+
+# 2. Create virtual environment
+python -m venv venv
+.\venv\Scripts\Activate.ps1
+
+# 3. Install dependencies
+pip install -r requirements.txt
+
+# 4. Create .dbt folder and copy profile
+New-Item -ItemType Directory -Force -Path "$env:USERPROFILE\.dbt"
+Copy-Item profiles\profiles_duckdb.yml "$env:USERPROFILE\.dbt\profiles.yml"
+
+# 5. Run dbt commands
+dbt debug
+dbt seed
+dbt run
+dbt test
+
+# 6. Generate and serve documentation
+dbt docs generate
+dbt docs serve
+```
+
+### Troubleshooting Windows Setup
+
+**PowerShell script execution disabled:**
+```powershell
+# Run PowerShell as Administrator and execute:
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+```
+
+**pip not recognized:**
+```cmd
+# Use python -m pip instead
+python -m pip install -r requirements.txt
+```
+
+**dbt not found after install:**
+```cmd
+# Ensure virtual environment is activated
+venv\Scripts\activate
+
+# Or run with python -m
+python -m dbt debug
 ```
 
 ## 📁 Project Structure
@@ -263,9 +319,9 @@ Tracks patient demographic changes over time.
 | state | VARCHAR | |
 | zip_code | VARCHAR | |
 | plan_type | VARCHAR | Insurance plan type |
+| valid_from | TIMESTAMP | SCD2 start |
+| valid_to | TIMESTAMP | SCD2 end |
 | is_current | BOOLEAN | Current record flag |
-| valid_from | TIMESTAMP | Record effective start |
-| valid_to | TIMESTAMP | Record effective end |
 
 #### `dim_provider` (SCD Type 2)
 Tracks provider information changes.
@@ -280,10 +336,9 @@ Tracks provider information changes.
 | address | VARCHAR | |
 | city | VARCHAR | |
 | state | VARCHAR | |
-| zip_code | VARCHAR | |
-| is_current | BOOLEAN | |
-| valid_from | TIMESTAMP | |
-| valid_to | TIMESTAMP | |
+| valid_from | TIMESTAMP | SCD2 start |
+| valid_to | TIMESTAMP | SCD2 end |
+| is_current | BOOLEAN | Current record flag |
 
 #### `dim_procedure`
 CPT/HCPCS procedure codes.
@@ -292,9 +347,10 @@ CPT/HCPCS procedure codes.
 |--------|------|-------------|
 | procedure_key | VARCHAR | Surrogate key |
 | procedure_code | VARCHAR | CPT/HCPCS code |
-| procedure_description | VARCHAR | |
-| procedure_category | VARCHAR | Grouped category |
-| is_surgical | BOOLEAN | |
+| procedure_description | VARCHAR | Description |
+| procedure_category | VARCHAR | Category grouping |
+| rvu_work | DECIMAL | Work RVU |
+| rvu_total | DECIMAL | Total RVU |
 
 #### `dim_diagnosis`
 ICD-10 diagnosis codes.
@@ -302,8 +358,8 @@ ICD-10 diagnosis codes.
 | Column | Type | Description |
 |--------|------|-------------|
 | diagnosis_key | VARCHAR | Surrogate key |
-| icd10_code | VARCHAR | ICD-10-CM code |
-| diagnosis_description | VARCHAR | |
+| diagnosis_code | VARCHAR | ICD-10 code |
+| diagnosis_description | VARCHAR | Description |
 | diagnosis_category | VARCHAR | CCS category |
 | is_chronic | BOOLEAN | Chronic condition flag |
 
@@ -416,12 +472,12 @@ WHERE paid_amount < 0
 ### Test Coverage
 
 Run all tests:
-```bash
+```cmd
 dbt test
 ```
 
 Run specific test types:
-```bash
+```cmd
 dbt test --select test_type:generic    # Schema tests
 dbt test --select test_type:singular   # Custom SQL tests
 ```
