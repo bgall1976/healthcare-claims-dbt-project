@@ -290,7 +290,34 @@ All checks passed!
 
 ---
 
-### Step 8: Load Seed Data
+### Step 8: Install dbt Packages
+
+```cmd
+dbt deps
+```
+
+**What this does:**
+- Reads the `packages.yml` file which lists required dbt packages
+- Downloads and installs packages like `dbt-utils` into the `dbt_packages/` folder
+
+**Why it's needed:**
+- The project uses helper packages like `dbt-utils` for common macros (surrogate keys, date spines, etc.)
+- These packages must be installed before running models that depend on them
+- **You will get an error if you skip this step!**
+
+**Expected output:**
+```
+Installing dbt-labs/dbt_utils
+Installed from version 1.1.1
+Installing dbt-labs/dbt_date
+Installed from version 0.10.1
+
+Packages installed successfully
+```
+
+---
+
+### Step 9: Load Seed Data
 
 ```cmd
 dbt seed
@@ -328,7 +355,7 @@ Done. PASS=6 WARN=0 ERROR=0 SKIP=0 TOTAL=6
 
 ---
 
-### Step 9: Run All Models
+### Step 10: Run All Models
 
 ```cmd
 dbt run
@@ -369,7 +396,7 @@ Done. PASS=15 WARN=0 ERROR=0 SKIP=0 TOTAL=15
 
 ---
 
-### Step 10: Run Tests
+### Step 11: Run Tests
 
 ```cmd
 dbt test
@@ -408,7 +435,7 @@ Done. PASS=25 WARN=0 ERROR=0 SKIP=0 TOTAL=25
 
 ---
 
-### Step 11: Generate and Serve Documentation
+### Step 12: Generate and Serve Documentation
 
 ```cmd
 dbt docs generate
@@ -451,7 +478,7 @@ set SNOWFLAKE_WAREHOUSE=COMPUTE_WH
 set SNOWFLAKE_DATABASE=HEALTHCARE_DW
 ```
 
-Then you can run any dbt command (`dbt run`, `dbt test`, etc.)
+Then you can run any dbt command (`dbt deps`, `dbt run`, `dbt test`, etc.)
 
 ---
 
@@ -486,6 +513,7 @@ Copy-Item profiles\profiles_snowflake.yml "$env:USERPROFILE\.dbt\profiles.yml"
 
 # 6. Run dbt commands
 dbt debug
+dbt deps
 dbt seed
 dbt run
 dbt test

@@ -49,7 +49,8 @@ models:
 
 seeds:
   healthcare_claims_dw:
-    +schema: raw
+    # Removed +schema: raw (schema is already set to RAW in profiles.yml)
+    # This prevents the schema from becoming RAW_RAW
     raw_claims:
       +column_types:
         claim_id: varchar(50)
