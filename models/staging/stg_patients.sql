@@ -47,11 +47,11 @@ renamed as (
         member_id,
         
         -- Coverage dates
-        cast(effective_date as date) as coverage_effective_date,
-        cast(term_date as date) as coverage_term_date,
+        try_to_date(effective_date) as coverage_effective_date,
+        try_to_date(term_date) as coverage_term_date,
         
         -- Metadata
-        cast(updated_at as timestamp) as source_updated_at
+        try_to_timestamp(updated_at) as source_updated_at
         
     from most_recent
 )
