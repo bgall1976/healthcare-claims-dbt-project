@@ -32,7 +32,7 @@ renamed as (
         -- Demographics
         trim(first_name) as first_name,
         trim(last_name) as last_name,
-        cast(date_of_birth as date) as date_of_birth,
+        to_date(date_of_birth) as date_of_birth,
         upper(trim(gender)) as gender,
         
         -- Address
@@ -46,12 +46,12 @@ renamed as (
         trim(plan_name) as plan_name,
         member_id,
         
-        -- Coverage dates
-        try_to_date(effective_date) as coverage_effective_date,
-        try_to_date(term_date) as coverage_term_date,
+        -- Coverage dates (columns are typeless/empty in seed data, using NULL placeholders)
+        null::date as coverage_effective_date,
+        null::date as coverage_term_date,
         
-        -- Metadata
-        try_to_timestamp(updated_at) as source_updated_at
+        -- Metadata (updated_at may also be typeless)
+        null::timestamp as source_updated_at
         
     from most_recent
 )
