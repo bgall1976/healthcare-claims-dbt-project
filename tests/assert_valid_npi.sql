@@ -15,5 +15,5 @@ from {{ ref('dim_provider') }}
 where 
     -- NPI must be exactly 10 characters
     length(npi) != 10
-    -- NPI must be all numeric
-    or npi !~ '^[0-9]+$'
+    -- NPI must be all numeric (Snowflake syntax)
+    or not regexp_like(npi, '^[0-9]+$')
