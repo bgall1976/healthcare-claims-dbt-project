@@ -67,76 +67,419 @@ This project builds a complete healthcare claims analytics data warehouse using:
 - Git
 - Basic familiarity with dbt concepts
 
+---
+
 ## 🚀 Quick Start (Windows)
 
 ### Option A: Local Development with DuckDB (Recommended for Demo)
 
 DuckDB requires no cloud setup and is perfect for demonstrating the project.
 
+---
+
+#### Step 1: Clone the Repository
+
 ```cmd
-# 1. Clone the repository
 git clone https://github.com/YOUR_USERNAME/healthcare-claims-dbt-project.git
 cd healthcare-claims-dbt-project
+```
 
-# 2. Create virtual environment
+**What this does:**
+- `git clone` downloads a complete copy of the project from GitHub to your local machine
+- `cd` changes your current directory into the newly created project folder
+
+**Why it's needed:**
+- You need the project files locally to run dbt commands
+- Cloning preserves the Git history, allowing you to track changes and push updates
+
+---
+
+#### Step 2: Create Virtual Environment
+
+```cmd
 python -m venv venv
 venv\Scripts\activate
+```
 
-# 3. Install dependencies
+**What this does:**
+- `python -m venv venv` creates an isolated Python environment in a folder called `venv`
+- `venv\Scripts\activate` activates the virtual environment (you'll see `(venv)` in your command prompt)
+
+**Why it's needed:**
+- **Isolation**: Keeps this project's Python packages separate from other projects
+- **Reproducibility**: Ensures everyone uses the same package versions
+- **Clean uninstall**: Delete the `venv` folder to remove all packages
+- **Best practice**: Standard in Python development to avoid dependency conflicts
+
+**How to verify:** Your command prompt should show `(venv)` at the beginning:
+```
+(venv) C:\Users\Dell\Documents\healthcare-claims-dbt-project>
+```
+
+---
+
+#### Step 3: Install Dependencies
+
+```cmd
 pip install -r requirements.txt
+```
 
-# 4. Create .dbt folder and copy profile
+**What this does:**
+- Reads the `requirements.txt` file which lists all required Python packages
+- Downloads and installs each package (dbt-core, dbt-duckdb, etc.) into your virtual environment
+
+**Why it's needed:**
+- dbt is a Python package that must be installed before you can use it
+- The project depends on specific packages like `dbt-core`, `dbt-duckdb`, and `dbt-utils`
+- `requirements.txt` ensures you get the exact versions that work with this project
+
+**What gets installed:**
+| Package | Purpose |
+|---------|---------|
+| dbt-core | The core dbt transformation framework |
+| dbt-duckdb | DuckDB adapter for dbt |
+| dbt-snowflake | Snowflake adapter (if using Snowflake) |
+
+---
+
+#### Step 4: Create .dbt Folder and Copy Profile
+
+```cmd
 mkdir %USERPROFILE%\.dbt
 copy profiles\profiles_duckdb.yml %USERPROFILE%\.dbt\profiles.yml
+```
 
-# 5. Verify connection
+**What this does:**
+- `mkdir %USERPROFILE%\.dbt` creates a hidden `.dbt` folder in your user directory (e.g., `C:\Users\Dell\.dbt`)
+- `copy` copies the pre-configured DuckDB profile to that folder, renaming it to `profiles.yml`
+
+**Why it's needed:**
+- dbt requires a `profiles.yml` file to know **how to connect** to your data warehouse
+- dbt always looks for this file in `~/.dbt/profiles.yml` (your user's home directory)
+- The profile contains connection details: database type, file path, credentials, etc.
+
+**What's in the profile:**
+```yaml
+healthcare_claims:
+  target: dev
+  outputs:
+    dev:
+      type: duckdb
+      path: 'healthcare_claims.duckdb'  # Local database file
+```
+
+---
+
+#### Step 5: Verify Connection
+
+```cmd
 dbt debug
+```
 
-# 6. Load seed data (synthetic claims)
+**What this does:**
+- Tests that dbt is properly installed
+- Validates your `profiles.yml` configuration
+- Attempts to connect to the database
+- Checks that the `dbt_project.yml` file is valid
+
+**Why it's needed:**
+- **Catches configuration errors early** before you try to run models
+- Confirms dbt can find and read your profile
+- Verifies database connectivity
+
+**Expected output (success):**
+```
+Configuration:
+  profiles.yml file [OK found and valid]
+  dbt_project.yml file [OK found and valid]
+
+Required dependencies:
+  - git [OK found]
+
+Connection:
+  database: healthcare_claims
+  schema: main
+  Connection test: [OK connection ok]
+
+All checks passed!
+```
+
+**If it fails:** Check that:
+- Virtual environment is activated (`(venv)` in prompt)
+- `profiles.yml` exists in `C:\Users\YourName\.dbt\`
+- Profile name in `profiles.yml` matches `profile:` in `dbt_project.yml`
+
+---
+
+#### Step 6: Load Seed Data
+
+```cmd
 dbt seed
+```
 
-# 7. Run all models
+**What this does:**
+- Reads all CSV files from the `seeds/` folder
+- Creates tables in your database and loads the CSV data into them
+- These become your source data for the project
+
+**Why it's needed:**
+- This project uses **synthetic healthcare data** stored in CSV files
+- dbt seeds turn these CSVs into database tables that models can reference
+- In production, you'd have real data sources; seeds simulate this for demos
+
+**What gets loaded:**
+| Seed File | Table Created | Purpose |
+|-----------|---------------|---------|
+| raw_claims.csv | raw_claims | Healthcare claim transactions |
+| raw_patients.csv | raw_patients | Patient demographics |
+| raw_providers.csv | raw_providers | Healthcare provider info |
+| ref_icd10_codes.csv | ref_icd10_codes | Diagnosis code reference |
+| ref_cpt_codes.csv | ref_cpt_codes | Procedure code reference |
+
+**Expected output:**
+```
+Running with dbt=1.7.0
+Found 6 seeds
+
+Completed successfully
+
+Done. PASS=6 WARN=0 ERROR=0 SKIP=0 TOTAL=6
+```
+
+---
+
+#### Step 7: Run All Models
+
+```cmd
 dbt run
+```
 
-# 8. Run tests
+**What this does:**
+- Executes all SQL models in the `models/` folder in dependency order
+- Creates views and tables in your database based on the SQL transformations
+- Builds the entire data pipeline: staging → intermediate → marts
+
+**Why it's needed:**
+- This is the **core of dbt** - transforming raw data into analytics-ready tables
+- Models are SQL SELECT statements that dbt materializes as views or tables
+- Running models builds your dimensional data warehouse (facts + dimensions)
+
+**What gets built:**
+```
+Staging Layer (views):
+  └── stg_claims, stg_patients, stg_providers, stg_diagnoses
+
+Intermediate Layer (ephemeral):
+  └── int_claims_enriched, int_patient_demographics, int_provider_details
+
+Marts Layer (tables):
+  └── Core: fact_claims, dim_patient, dim_provider, dim_procedure, dim_diagnosis, dim_date
+  └── Features: fct_patient_risk_profile, fct_provider_quality_metrics
+```
+
+**Expected output:**
+```
+Running with dbt=1.7.0
+Found 15 models
+
+Completed successfully
+
+Done. PASS=15 WARN=0 ERROR=0 SKIP=0 TOTAL=15
+```
+
+---
+
+#### Step 8: Run Tests
+
+```cmd
 dbt test
+```
 
-# 9. Generate and serve documentation
+**What this does:**
+- Runs all data quality tests defined in the project
+- Checks constraints like: unique keys, not null, valid relationships, value ranges
+- Reports any data quality issues found
+
+**Why it's needed:**
+- **Data quality assurance**: Ensures your transformations produced valid data
+- **Catches bugs**: Finds issues like duplicate keys, null values, broken references
+- **Documentation**: Tests serve as executable documentation of data expectations
+- **CI/CD**: Tests run automatically in pipelines to prevent bad data from deploying
+
+**Types of tests run:**
+| Test Type | What It Checks | Example |
+|-----------|----------------|---------|
+| unique | No duplicate values | `claim_key` is unique |
+| not_null | No NULL values | `patient_id` is never null |
+| relationships | Foreign key integrity | Every `patient_key` exists in `dim_patient` |
+| accepted_values | Valid value list | `gender` is 'M', 'F', or 'U' |
+| accepted_range | Numeric bounds | `paid_amount` >= 0 |
+
+**Expected output:**
+```
+Running with dbt=1.7.0
+Found 25 tests
+
+Completed successfully
+
+Done. PASS=25 WARN=0 ERROR=0 SKIP=0 TOTAL=25
+```
+
+---
+
+#### Step 9: Generate and Serve Documentation
+
+```cmd
 dbt docs generate
 dbt docs serve
 ```
 
+**What this does:**
+- `dbt docs generate` scans all models, tests, and descriptions to create documentation
+- `dbt docs serve` starts a local web server and opens your browser to view the docs
+
+**Why it's needed:**
+- **Auto-generated documentation**: Creates a complete data catalog from your code
+- **Lineage graphs**: Visual DAG showing how data flows through models
+- **Column descriptions**: Shows all columns, types, and tests for each model
+- **Searchable**: Find any model, column, or test quickly
+- **Stakeholder-friendly**: Non-technical users can explore the data warehouse
+
+**What you'll see:**
+- A web browser opens to `http://localhost:8080`
+- Interactive lineage graph showing model dependencies
+- Click any model to see its SQL, columns, and tests
+- Search bar to find any object
+
+**To stop the server:** Press `Ctrl+C` in the command prompt
+
+---
+
 ### Option B: Snowflake Setup (Windows)
 
+---
+
+#### Step 1: Clone and Setup Virtual Environment
+
 ```cmd
-# 1. Clone and setup virtual environment (same as above)
 git clone https://github.com/YOUR_USERNAME/healthcare-claims-dbt-project.git
 cd healthcare-claims-dbt-project
 python -m venv venv
 venv\Scripts\activate
 pip install -r requirements.txt
+```
 
-# 2. Set environment variables for Snowflake
+**What this does:** Same as Option A Steps 1-3 (see explanations above)
+
+---
+
+#### Step 2: Set Environment Variables for Snowflake
+
+```cmd
 set SNOWFLAKE_ACCOUNT=your_account
 set SNOWFLAKE_USER=your_username
 set SNOWFLAKE_PASSWORD=your_password
 set SNOWFLAKE_ROLE=your_role
 set SNOWFLAKE_WAREHOUSE=your_warehouse
 set SNOWFLAKE_DATABASE=HEALTHCARE_DW
+```
 
-# 3. Create .dbt folder and copy Snowflake profile
+**What this does:**
+- Creates temporary environment variables in your current command prompt session
+- These variables store your Snowflake connection credentials
+- The dbt profile reads these variables to connect to Snowflake
+
+**Why it's needed:**
+- **Security**: Keeps passwords out of config files that might be committed to Git
+- **Flexibility**: Easy to change credentials without editing files
+- **Best practice**: Standard approach for managing secrets in development
+
+**Where to find these values:**
+
+| Variable | Where to Find It |
+|----------|------------------|
+| SNOWFLAKE_ACCOUNT | Your Snowflake URL: `https://ABC123.us-east-1.snowflakecomputing.com` → `ABC123.us-east-1` |
+| SNOWFLAKE_USER | Your Snowflake login username |
+| SNOWFLAKE_PASSWORD | Your Snowflake login password |
+| SNOWFLAKE_ROLE | Run `SHOW ROLES;` in Snowflake (e.g., `ACCOUNTADMIN`, `SYSADMIN`) |
+| SNOWFLAKE_WAREHOUSE | Run `SHOW WAREHOUSES;` in Snowflake (e.g., `COMPUTE_WH`) |
+| SNOWFLAKE_DATABASE | The database name you'll create (e.g., `HEALTHCARE_DW`) |
+
+**Note:** These variables only last for the current session. For permanent setup, add them to Windows System Environment Variables.
+
+---
+
+#### Step 3: Create .dbt Folder and Copy Snowflake Profile
+
+```cmd
 mkdir %USERPROFILE%\.dbt
 copy profiles\profiles_snowflake.yml %USERPROFILE%\.dbt\profiles.yml
+```
 
-# 4. Create database objects (run in Snowflake)
-# See scripts/snowflake_setup.sql
+**What this does:** Same as Option A Step 4, but copies the Snowflake profile instead of DuckDB
 
-# 5. Verify connection and run
+**What's in the Snowflake profile:**
+```yaml
+healthcare_claims:
+  target: dev
+  outputs:
+    dev:
+      type: snowflake
+      account: "{{ env_var('SNOWFLAKE_ACCOUNT') }}"
+      user: "{{ env_var('SNOWFLAKE_USER') }}"
+      password: "{{ env_var('SNOWFLAKE_PASSWORD') }}"
+      role: "{{ env_var('SNOWFLAKE_ROLE') }}"
+      warehouse: "{{ env_var('SNOWFLAKE_WAREHOUSE') }}"
+      database: "{{ env_var('SNOWFLAKE_DATABASE') }}"
+      schema: RAW
+```
+
+The `{{ env_var('...') }}` syntax tells dbt to read values from environment variables.
+
+---
+
+#### Step 4: Create Database Objects in Snowflake
+
+Before running dbt, you need to create the database and schemas in Snowflake.
+
+**Run this SQL in your Snowflake worksheet:**
+
+```sql
+-- Create database
+CREATE DATABASE IF NOT EXISTS HEALTHCARE_DW;
+
+-- Create schemas
+CREATE SCHEMA IF NOT EXISTS HEALTHCARE_DW.RAW;
+CREATE SCHEMA IF NOT EXISTS HEALTHCARE_DW.STAGING;
+CREATE SCHEMA IF NOT EXISTS HEALTHCARE_DW.MARTS;
+CREATE SCHEMA IF NOT EXISTS HEALTHCARE_DW.SNAPSHOTS;
+
+-- Create warehouse (if needed)
+CREATE WAREHOUSE IF NOT EXISTS COMPUTE_WH 
+    WITH WAREHOUSE_SIZE = 'XSMALL'
+    AUTO_SUSPEND = 60
+    AUTO_RESUME = TRUE;
+```
+
+**Why it's needed:**
+- dbt needs a database and schemas to exist before it can create tables
+- The warehouse provides compute resources to run queries
+- Schemas organize tables by layer (raw, staging, marts)
+
+---
+
+#### Step 5: Verify Connection and Run
+
+```cmd
 dbt debug
 dbt seed
 dbt run
 dbt test
 ```
+
+**What this does:** Same as Option A Steps 5-8, but now running against Snowflake instead of DuckDB
+
+---
 
 ### Alternative: Using PowerShell
 
@@ -169,6 +512,13 @@ dbt docs generate
 dbt docs serve
 ```
 
+**PowerShell differences:**
+- Uses `.\venv\Scripts\Activate.ps1` instead of `venv\Scripts\activate`
+- Uses `$env:USERPROFILE` instead of `%USERPROFILE%`
+- Uses `New-Item` and `Copy-Item` cmdlets instead of `mkdir` and `copy`
+
+---
+
 ### Troubleshooting Windows Setup
 
 **PowerShell script execution disabled:**
@@ -176,12 +526,14 @@ dbt docs serve
 # Run PowerShell as Administrator and execute:
 Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
 ```
+*This allows PowerShell to run local scripts while still protecting against remote unsigned scripts.*
 
 **pip not recognized:**
 ```cmd
 # Use python -m pip instead
 python -m pip install -r requirements.txt
 ```
+*This happens when pip isn't in your PATH. Using `python -m pip` always works.*
 
 **dbt not found after install:**
 ```cmd
@@ -191,6 +543,9 @@ venv\Scripts\activate
 # Or run with python -m
 python -m dbt debug
 ```
+*dbt is installed in the virtual environment, so you must activate it first.*
+
+---
 
 ## 📁 Project Structure
 
