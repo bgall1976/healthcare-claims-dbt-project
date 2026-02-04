@@ -80,7 +80,7 @@ DuckDB requires no cloud setup and is perfect for demonstrating the project.
 #### Step 1: Clone the Repository
 
 ```cmd
-git clone https://github.com/YOUR_USERNAME/healthcare-claims-dbt-project.git
+git clone https://github.com/bgall1976/healthcare-claims-dbt-project.git
 cd healthcare-claims-dbt-project
 ```
 
@@ -362,27 +362,37 @@ dbt docs serve
 #### Step 1: Clone and Setup Virtual Environment
 
 ```cmd
-git clone https://github.com/YOUR_USERNAME/healthcare-claims-dbt-project.git
+git clone https://github.com/bgall1976/healthcare-claims-dbt-project.git
 cd healthcare-claims-dbt-project
 python -m venv venv
 venv\Scripts\activate
-pip install -r requirements.txt
+python -m pip install --upgrade pip
+python -m pip install dbt-snowflake
 ```
 
-**What this does:** Same as Option A Steps 1-3 (see explanations above)
+**What this does:** 
+- Clones the repository from GitHub
+- Creates and activates a Python virtual environment
+- Upgrades pip and installs dbt with Snowflake adapter
+
+**Important:** Use `python -m pip install` to ensure packages install in the virtual environment, not globally.
 
 ---
 
 #### Step 2: Set Environment Variables for Snowflake
 
+**⚠️ IMPORTANT: Run each command on a separate line!**
+
 ```cmd
-set SNOWFLAKE_ACCOUNT=your_account
+set SNOWFLAKE_ACCOUNT=avc25434.us-east-1
 set SNOWFLAKE_USER=your_username
 set SNOWFLAKE_PASSWORD=your_password
-set SNOWFLAKE_ROLE=your_role
-set SNOWFLAKE_WAREHOUSE=your_warehouse
+set SNOWFLAKE_ROLE=ACCOUNTADMIN
+set SNOWFLAKE_WAREHOUSE=COMPUTE_WH
 set SNOWFLAKE_DATABASE=HEALTHCARE_DW
 ```
+
+**Replace `your_username` and `your_password` with your actual Snowflake login credentials.**
 
 **What this does:**
 - Creates temporary environment variables in your current command prompt session
@@ -396,16 +406,22 @@ set SNOWFLAKE_DATABASE=HEALTHCARE_DW
 
 **Where to find these values:**
 
-| Variable | Where to Find It |
-|----------|------------------|
-| SNOWFLAKE_ACCOUNT | Your Snowflake URL: `https://ABC123.us-east-1.snowflakecomputing.com` → `ABC123.us-east-1` |
-| SNOWFLAKE_USER | Your Snowflake login username |
-| SNOWFLAKE_PASSWORD | Your Snowflake login password |
-| SNOWFLAKE_ROLE | Run `SHOW ROLES;` in Snowflake (e.g., `ACCOUNTADMIN`, `SYSADMIN`) |
-| SNOWFLAKE_WAREHOUSE | Run `SHOW WAREHOUSES;` in Snowflake (e.g., `COMPUTE_WH`) |
-| SNOWFLAKE_DATABASE | The database name you'll create (e.g., `HEALTHCARE_DW`) |
+| Variable | Value | Description |
+|----------|-------|-------------|
+| SNOWFLAKE_ACCOUNT | `avc25434.us-east-1` | From your Snowflake URL |
+| SNOWFLAKE_USER | Your username | The username you use to log into Snowflake |
+| SNOWFLAKE_PASSWORD | Your password | The password you use to log into Snowflake |
+| SNOWFLAKE_ROLE | `ACCOUNTADMIN` | Default admin role (or run `SHOW ROLES;` to see options) |
+| SNOWFLAKE_WAREHOUSE | `COMPUTE_WH` | Compute warehouse name |
+| SNOWFLAKE_DATABASE | `HEALTHCARE_DW` | Database for this project |
 
-**Note:** These variables only last for the current session. For permanent setup, add them to Windows System Environment Variables.
+**To verify the variables are set:**
+```cmd
+echo %SNOWFLAKE_ACCOUNT%
+```
+This should print: `avc25434.us-east-1`
+
+**Note:** These variables only last for the current command prompt session. If you close the window, you'll need to set them again. For permanent setup, add them to Windows System Environment Variables.
 
 ---
 
@@ -487,7 +503,7 @@ If you prefer PowerShell over Command Prompt:
 
 ```powershell
 # 1. Clone the repository
-git clone https://github.com/YOUR_USERNAME/healthcare-claims-dbt-project.git
+git clone https://github.com/bgall1976/healthcare-claims-dbt-project.git
 cd healthcare-claims-dbt-project
 
 # 2. Create virtual environment
@@ -495,19 +511,28 @@ python -m venv venv
 .\venv\Scripts\Activate.ps1
 
 # 3. Install dependencies
-pip install -r requirements.txt
+python -m pip install --upgrade pip
+python -m pip install dbt-snowflake
 
-# 4. Create .dbt folder and copy profile
+# 4. Set environment variables (PowerShell syntax)
+$env:SNOWFLAKE_ACCOUNT = "avc25434.us-east-1"
+$env:SNOWFLAKE_USER = "your_username"
+$env:SNOWFLAKE_PASSWORD = "your_password"
+$env:SNOWFLAKE_ROLE = "ACCOUNTADMIN"
+$env:SNOWFLAKE_WAREHOUSE = "COMPUTE_WH"
+$env:SNOWFLAKE_DATABASE = "HEALTHCARE_DW"
+
+# 5. Create .dbt folder and copy profile
 New-Item -ItemType Directory -Force -Path "$env:USERPROFILE\.dbt"
-Copy-Item profiles\profiles_duckdb.yml "$env:USERPROFILE\.dbt\profiles.yml"
+Copy-Item profiles\profiles_snowflake.yml "$env:USERPROFILE\.dbt\profiles.yml"
 
-# 5. Run dbt commands
+# 6. Run dbt commands
 dbt debug
 dbt seed
 dbt run
 dbt test
 
-# 6. Generate and serve documentation
+# 7. Generate and serve documentation
 dbt docs generate
 dbt docs serve
 ```
@@ -521,29 +546,58 @@ dbt docs serve
 
 ### Troubleshooting Windows Setup
 
+**'dbt' is not recognized after install:**
+```cmd
+# Make sure virtual environment is activated (you should see (venv) in prompt)
+venv\Scripts\activate
+
+# If packages installed globally instead of in venv, reinstall:
+python -m pip install dbt-snowflake
+
+# Or run dbt via Python module
+python -m dbt debug
+```
+
+**Packages installing to wrong location:**
+```cmd
+# Always use python -m pip to ensure correct location
+python -m pip install dbt-snowflake
+
+# Verify where dbt is installed (should be in venv folder)
+where dbt
+```
+
 **PowerShell script execution disabled:**
 ```powershell
 # Run PowerShell as Administrator and execute:
 Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
 ```
-*This allows PowerShell to run local scripts while still protecting against remote unsigned scripts.*
 
 **pip not recognized:**
 ```cmd
 # Use python -m pip instead
-python -m pip install -r requirements.txt
+python -m pip install dbt-snowflake
 ```
-*This happens when pip isn't in your PATH. Using `python -m pip` always works.*
 
-**dbt not found after install:**
+**Environment variables not working:**
 ```cmd
-# Ensure virtual environment is activated
-venv\Scripts\activate
+# Verify they are set
+echo %SNOWFLAKE_ACCOUNT%
 
-# Or run with python -m
-python -m dbt debug
+# If empty, re-run the set commands (each on its own line!)
+set SNOWFLAKE_ACCOUNT=avc25434.us-east-1
 ```
-*dbt is installed in the virtual environment, so you must activate it first.*
+
+**dbt debug fails with connection error:**
+```cmd
+# Check that all environment variables are set
+echo %SNOWFLAKE_ACCOUNT%
+echo %SNOWFLAKE_USER%
+echo %SNOWFLAKE_DATABASE%
+
+# Verify profiles.yml exists
+dir %USERPROFILE%\.dbt\profiles.yml
+```
 
 ---
 
