@@ -7,7 +7,7 @@ A production-ready dbt project demonstrating modern healthcare data engineering 
 This project builds a complete healthcare claims analytics data warehouse using:
 
 - **dbt** for transformation and testing
-- **Snowflake** (or DuckDB for local development) as the data warehouse
+- **Snowflake** as the data warehouse
 - **CMS Synthetic Claims Data** as the source dataset
 - **Kimball dimensional modeling** for analytics-ready structure
 - **SCD Type 2 snapshots** for historical tracking
@@ -61,9 +61,7 @@ This project builds a complete healthcare claims analytics data warehouse using:
 ## 📋 Prerequisites
 
 - Python 3.9+
-- One of the following:
-  - **Snowflake account** (30-day free trial available)
-  - **DuckDB** (free, local development)
+- **Snowflake account** (30-day free trial available at https://signup.snowflake.com/)
 - Git
 - Basic familiarity with dbt concepts
 
@@ -71,13 +69,9 @@ This project builds a complete healthcare claims analytics data warehouse using:
 
 ## 🚀 Quick Start (Windows)
 
-### Option A: Local Development with DuckDB (Recommended for Demo)
-
-DuckDB requires no cloud setup and is perfect for demonstrating the project.
-
 ---
 
-#### Step 1: Clone the Repository
+### Step 1: Clone the Repository
 
 ```cmd
 git clone https://github.com/bgall1976/healthcare-claims-dbt-project.git
@@ -94,7 +88,7 @@ cd healthcare-claims-dbt-project
 
 ---
 
-#### Step 2: Create Virtual Environment
+### Step 2: Create Virtual Environment
 
 ```cmd
 python -m venv venv
@@ -118,59 +112,140 @@ venv\Scripts\activate
 
 ---
 
-#### Step 3: Install Dependencies
+### Step 3: Install Dependencies
 
 ```cmd
-pip install -r requirements.txt
+python -m pip install --upgrade pip
+python -m pip install dbt-snowflake
 ```
 
 **What this does:**
-- Reads the `requirements.txt` file which lists all required Python packages
-- Downloads and installs each package (dbt-core, dbt-duckdb, etc.) into your virtual environment
+- Upgrades pip to the latest version
+- Installs dbt with the Snowflake adapter
 
 **Why it's needed:**
 - dbt is a Python package that must be installed before you can use it
-- The project depends on specific packages like `dbt-core`, `dbt-duckdb`, and `dbt-utils`
-- `requirements.txt` ensures you get the exact versions that work with this project
+- The Snowflake adapter allows dbt to connect to your Snowflake data warehouse
 
-**What gets installed:**
-| Package | Purpose |
-|---------|---------|
-| dbt-core | The core dbt transformation framework |
-| dbt-duckdb | DuckDB adapter for dbt |
-| dbt-snowflake | Snowflake adapter (if using Snowflake) |
+**Important:** Use `python -m pip install` to ensure packages install in the virtual environment, not globally.
 
 ---
 
-#### Step 4: Create .dbt Folder and Copy Profile
+### Step 4: Set Environment Variables for Snowflake
+
+**⚠️ IMPORTANT: Run each command on a separate line!**
+
+```cmd
+set SNOWFLAKE_ACCOUNT=ZSPGHZC-HXC41003
+set SNOWFLAKE_USER=SNOWFLAKE
+set "SNOWFLAKE_PASSWORD=your_password_here"
+set SNOWFLAKE_ROLE=ACCOUNTADMIN
+set SNOWFLAKE_WAREHOUSE=COMPUTE_WH
+set SNOWFLAKE_DATABASE=HEALTHCARE_DW
+```
+
+**Replace `your_password_here` with your actual Snowflake password.**
+
+**⚠️ Note:** If your password contains special characters (`%`, `&`, `@`, `)`, `(`, etc.), you MUST wrap the entire command in quotes as shown above: `set "SNOWFLAKE_PASSWORD=your_password"`
+
+**What this does:**
+- Creates temporary environment variables in your current command prompt session
+- These variables store your Snowflake connection credentials
+- The dbt profile reads these variables to connect to Snowflake
+
+**Why it's needed:**
+- **Security**: Keeps passwords out of config files that might be committed to Git
+- **Flexibility**: Easy to change credentials without editing files
+- **Best practice**: Standard approach for managing secrets in development
+
+**Where to find these values:**
+
+| Variable | Value | How to Find It |
+|----------|-------|----------------|
+| SNOWFLAKE_ACCOUNT | `ZSPGHZC-HXC41003` | Snowflake → Account → Account identifier |
+| SNOWFLAKE_USER | `SNOWFLAKE` | Your Snowflake login username |
+| SNOWFLAKE_PASSWORD | Your password | The password you use to log into Snowflake |
+| SNOWFLAKE_ROLE | `ACCOUNTADMIN` | Default admin role |
+| SNOWFLAKE_WAREHOUSE | `COMPUTE_WH` | Compute warehouse name |
+| SNOWFLAKE_DATABASE | `HEALTHCARE_DW` | Database for this project |
+
+**To verify the variables are set:**
+```cmd
+echo %SNOWFLAKE_ACCOUNT%
+```
+This should print: `ZSPGHZC-HXC41003`
+
+**Note:** These variables only last for the current command prompt session. If you close the window, you'll need to set them again.
+
+---
+
+### Step 5: Create .dbt Folder and Copy Snowflake Profile
 
 ```cmd
 mkdir %USERPROFILE%\.dbt
-copy profiles\profiles_duckdb.yml %USERPROFILE%\.dbt\profiles.yml
+copy profiles\profiles_snowflake.yml %USERPROFILE%\.dbt\profiles.yml
 ```
 
 **What this does:**
 - `mkdir %USERPROFILE%\.dbt` creates a hidden `.dbt` folder in your user directory (e.g., `C:\Users\Dell\.dbt`)
-- `copy` copies the pre-configured DuckDB profile to that folder, renaming it to `profiles.yml`
+- `copy` copies the pre-configured Snowflake profile to that folder, renaming it to `profiles.yml`
 
 **Why it's needed:**
 - dbt requires a `profiles.yml` file to know **how to connect** to your data warehouse
 - dbt always looks for this file in `~/.dbt/profiles.yml` (your user's home directory)
-- The profile contains connection details: database type, file path, credentials, etc.
+- The profile contains connection details that reference the environment variables you set
 
-**What's in the profile:**
+**What's in the Snowflake profile:**
 ```yaml
 healthcare_claims:
   target: dev
   outputs:
     dev:
-      type: duckdb
-      path: 'healthcare_claims.duckdb'  # Local database file
+      type: snowflake
+      account: "{{ env_var('SNOWFLAKE_ACCOUNT') }}"
+      user: "{{ env_var('SNOWFLAKE_USER') }}"
+      password: "{{ env_var('SNOWFLAKE_PASSWORD') }}"
+      role: "{{ env_var('SNOWFLAKE_ROLE') }}"
+      warehouse: "{{ env_var('SNOWFLAKE_WAREHOUSE') }}"
+      database: "{{ env_var('SNOWFLAKE_DATABASE') }}"
+      schema: RAW
 ```
+
+The `{{ env_var('...') }}` syntax tells dbt to read values from environment variables.
 
 ---
 
-#### Step 5: Verify Connection
+### Step 6: Create Database Objects in Snowflake
+
+Before running dbt, you need to create the database and schemas in Snowflake.
+
+**Run this SQL in your Snowflake worksheet:**
+
+```sql
+-- Create database
+CREATE DATABASE IF NOT EXISTS HEALTHCARE_DW;
+
+-- Create schemas
+CREATE SCHEMA IF NOT EXISTS HEALTHCARE_DW.RAW;
+CREATE SCHEMA IF NOT EXISTS HEALTHCARE_DW.STAGING;
+CREATE SCHEMA IF NOT EXISTS HEALTHCARE_DW.MARTS;
+CREATE SCHEMA IF NOT EXISTS HEALTHCARE_DW.SNAPSHOTS;
+
+-- Create warehouse (if needed)
+CREATE WAREHOUSE IF NOT EXISTS COMPUTE_WH 
+    WITH WAREHOUSE_SIZE = 'XSMALL'
+    AUTO_SUSPEND = 60
+    AUTO_RESUME = TRUE;
+```
+
+**Why it's needed:**
+- dbt needs a database and schemas to exist before it can create tables
+- The warehouse provides compute resources to run queries
+- Schemas organize tables by layer (raw, staging, marts)
+
+---
+
+### Step 7: Verify Connection
 
 ```cmd
 dbt debug
@@ -179,13 +254,13 @@ dbt debug
 **What this does:**
 - Tests that dbt is properly installed
 - Validates your `profiles.yml` configuration
-- Attempts to connect to the database
+- Attempts to connect to Snowflake
 - Checks that the `dbt_project.yml` file is valid
 
 **Why it's needed:**
 - **Catches configuration errors early** before you try to run models
 - Confirms dbt can find and read your profile
-- Verifies database connectivity
+- Verifies Snowflake connectivity
 
 **Expected output (success):**
 ```
@@ -197,8 +272,11 @@ Required dependencies:
   - git [OK found]
 
 Connection:
-  database: healthcare_claims
-  schema: main
+  account: ZSPGHZC-HXC41003
+  user: SNOWFLAKE
+  database: HEALTHCARE_DW
+  warehouse: COMPUTE_WH
+  ...
   Connection test: [OK connection ok]
 
 All checks passed!
@@ -206,12 +284,13 @@ All checks passed!
 
 **If it fails:** Check that:
 - Virtual environment is activated (`(venv)` in prompt)
+- Environment variables are set (run `echo %SNOWFLAKE_ACCOUNT%`)
 - `profiles.yml` exists in `C:\Users\YourName\.dbt\`
-- Profile name in `profiles.yml` matches `profile:` in `dbt_project.yml`
+- Your Snowflake credentials are correct
 
 ---
 
-#### Step 6: Load Seed Data
+### Step 8: Load Seed Data
 
 ```cmd
 dbt seed
@@ -219,7 +298,7 @@ dbt seed
 
 **What this does:**
 - Reads all CSV files from the `seeds/` folder
-- Creates tables in your database and loads the CSV data into them
+- Creates tables in Snowflake and loads the CSV data into them
 - These become your source data for the project
 
 **Why it's needed:**
@@ -228,6 +307,7 @@ dbt seed
 - In production, you'd have real data sources; seeds simulate this for demos
 
 **What gets loaded:**
+
 | Seed File | Table Created | Purpose |
 |-----------|---------------|---------|
 | raw_claims.csv | raw_claims | Healthcare claim transactions |
@@ -248,7 +328,7 @@ Done. PASS=6 WARN=0 ERROR=0 SKIP=0 TOTAL=6
 
 ---
 
-#### Step 7: Run All Models
+### Step 9: Run All Models
 
 ```cmd
 dbt run
@@ -256,7 +336,7 @@ dbt run
 
 **What this does:**
 - Executes all SQL models in the `models/` folder in dependency order
-- Creates views and tables in your database based on the SQL transformations
+- Creates views and tables in Snowflake based on the SQL transformations
 - Builds the entire data pipeline: staging → intermediate → marts
 
 **Why it's needed:**
@@ -289,7 +369,7 @@ Done. PASS=15 WARN=0 ERROR=0 SKIP=0 TOTAL=15
 
 ---
 
-#### Step 8: Run Tests
+### Step 10: Run Tests
 
 ```cmd
 dbt test
@@ -307,6 +387,7 @@ dbt test
 - **CI/CD**: Tests run automatically in pipelines to prevent bad data from deploying
 
 **Types of tests run:**
+
 | Test Type | What It Checks | Example |
 |-----------|----------------|---------|
 | unique | No duplicate values | `claim_key` is unique |
@@ -327,7 +408,7 @@ Done. PASS=25 WARN=0 ERROR=0 SKIP=0 TOTAL=25
 
 ---
 
-#### Step 9: Generate and Serve Documentation
+### Step 11: Generate and Serve Documentation
 
 ```cmd
 dbt docs generate
@@ -355,149 +436,26 @@ dbt docs serve
 
 ---
 
-### Option B: Snowflake Setup (Windows)
+## 🔄 Quick Reference: Coming Back Later
 
----
-
-#### Step 1: Clone and Setup Virtual Environment
+If you close the command prompt and come back later, run these commands:
 
 ```cmd
-git clone https://github.com/bgall1976/healthcare-claims-dbt-project.git
-cd healthcare-claims-dbt-project
-python -m venv venv
+cd C:\Users\Dell\Documents\github_portfolio\healthcare-claims-dbt-project
 venv\Scripts\activate
-python -m pip install --upgrade pip
-python -m pip install dbt-snowflake
-```
-
-**What this does:** 
-- Clones the repository from GitHub
-- Creates and activates a Python virtual environment
-- Upgrades pip and installs dbt with Snowflake adapter
-
-**Important:** Use `python -m pip install` to ensure packages install in the virtual environment, not globally.
-
----
-
-#### Step 2: Set Environment Variables for Snowflake
-
-**⚠️ IMPORTANT: Run each command on a separate line!**
-
-```cmd
-set SNOWFLAKE_ACCOUNT=avc25434.us-east-1
-set SNOWFLAKE_USER=your_username
-set SNOWFLAKE_PASSWORD=your_password
+set SNOWFLAKE_ACCOUNT=ZSPGHZC-HXC41003
+set SNOWFLAKE_USER=SNOWFLAKE
+set "SNOWFLAKE_PASSWORD=your_password_here"
 set SNOWFLAKE_ROLE=ACCOUNTADMIN
 set SNOWFLAKE_WAREHOUSE=COMPUTE_WH
 set SNOWFLAKE_DATABASE=HEALTHCARE_DW
 ```
 
-**Replace `your_username` and `your_password` with your actual Snowflake login credentials.**
-
-**What this does:**
-- Creates temporary environment variables in your current command prompt session
-- These variables store your Snowflake connection credentials
-- The dbt profile reads these variables to connect to Snowflake
-
-**Why it's needed:**
-- **Security**: Keeps passwords out of config files that might be committed to Git
-- **Flexibility**: Easy to change credentials without editing files
-- **Best practice**: Standard approach for managing secrets in development
-
-**Where to find these values:**
-
-| Variable | Value | Description |
-|----------|-------|-------------|
-| SNOWFLAKE_ACCOUNT | `avc25434.us-east-1` | From your Snowflake URL |
-| SNOWFLAKE_USER | Your username | The username you use to log into Snowflake |
-| SNOWFLAKE_PASSWORD | Your password | The password you use to log into Snowflake |
-| SNOWFLAKE_ROLE | `ACCOUNTADMIN` | Default admin role (or run `SHOW ROLES;` to see options) |
-| SNOWFLAKE_WAREHOUSE | `COMPUTE_WH` | Compute warehouse name |
-| SNOWFLAKE_DATABASE | `HEALTHCARE_DW` | Database for this project |
-
-**To verify the variables are set:**
-```cmd
-echo %SNOWFLAKE_ACCOUNT%
-```
-This should print: `avc25434.us-east-1`
-
-**Note:** These variables only last for the current command prompt session. If you close the window, you'll need to set them again. For permanent setup, add them to Windows System Environment Variables.
+Then you can run any dbt command (`dbt run`, `dbt test`, etc.)
 
 ---
 
-#### Step 3: Create .dbt Folder and Copy Snowflake Profile
-
-```cmd
-mkdir %USERPROFILE%\.dbt
-copy profiles\profiles_snowflake.yml %USERPROFILE%\.dbt\profiles.yml
-```
-
-**What this does:** Same as Option A Step 4, but copies the Snowflake profile instead of DuckDB
-
-**What's in the Snowflake profile:**
-```yaml
-healthcare_claims:
-  target: dev
-  outputs:
-    dev:
-      type: snowflake
-      account: "{{ env_var('SNOWFLAKE_ACCOUNT') }}"
-      user: "{{ env_var('SNOWFLAKE_USER') }}"
-      password: "{{ env_var('SNOWFLAKE_PASSWORD') }}"
-      role: "{{ env_var('SNOWFLAKE_ROLE') }}"
-      warehouse: "{{ env_var('SNOWFLAKE_WAREHOUSE') }}"
-      database: "{{ env_var('SNOWFLAKE_DATABASE') }}"
-      schema: RAW
-```
-
-The `{{ env_var('...') }}` syntax tells dbt to read values from environment variables.
-
----
-
-#### Step 4: Create Database Objects in Snowflake
-
-Before running dbt, you need to create the database and schemas in Snowflake.
-
-**Run this SQL in your Snowflake worksheet:**
-
-```sql
--- Create database
-CREATE DATABASE IF NOT EXISTS HEALTHCARE_DW;
-
--- Create schemas
-CREATE SCHEMA IF NOT EXISTS HEALTHCARE_DW.RAW;
-CREATE SCHEMA IF NOT EXISTS HEALTHCARE_DW.STAGING;
-CREATE SCHEMA IF NOT EXISTS HEALTHCARE_DW.MARTS;
-CREATE SCHEMA IF NOT EXISTS HEALTHCARE_DW.SNAPSHOTS;
-
--- Create warehouse (if needed)
-CREATE WAREHOUSE IF NOT EXISTS COMPUTE_WH 
-    WITH WAREHOUSE_SIZE = 'XSMALL'
-    AUTO_SUSPEND = 60
-    AUTO_RESUME = TRUE;
-```
-
-**Why it's needed:**
-- dbt needs a database and schemas to exist before it can create tables
-- The warehouse provides compute resources to run queries
-- Schemas organize tables by layer (raw, staging, marts)
-
----
-
-#### Step 5: Verify Connection and Run
-
-```cmd
-dbt debug
-dbt seed
-dbt run
-dbt test
-```
-
-**What this does:** Same as Option A Steps 5-8, but now running against Snowflake instead of DuckDB
-
----
-
-### Alternative: Using PowerShell
+## 🔧 Alternative: Using PowerShell
 
 If you prefer PowerShell over Command Prompt:
 
@@ -515,9 +473,9 @@ python -m pip install --upgrade pip
 python -m pip install dbt-snowflake
 
 # 4. Set environment variables (PowerShell syntax)
-$env:SNOWFLAKE_ACCOUNT = "avc25434.us-east-1"
-$env:SNOWFLAKE_USER = "your_username"
-$env:SNOWFLAKE_PASSWORD = "your_password"
+$env:SNOWFLAKE_ACCOUNT = "ZSPGHZC-HXC41003"
+$env:SNOWFLAKE_USER = "SNOWFLAKE"
+$env:SNOWFLAKE_PASSWORD = "your_password_here"
 $env:SNOWFLAKE_ROLE = "ACCOUNTADMIN"
 $env:SNOWFLAKE_WAREHOUSE = "COMPUTE_WH"
 $env:SNOWFLAKE_DATABASE = "HEALTHCARE_DW"
@@ -539,12 +497,12 @@ dbt docs serve
 
 **PowerShell differences:**
 - Uses `.\venv\Scripts\Activate.ps1` instead of `venv\Scripts\activate`
-- Uses `$env:USERPROFILE` instead of `%USERPROFILE%`
+- Uses `$env:VARIABLE = "value"` instead of `set VARIABLE=value`
 - Uses `New-Item` and `Copy-Item` cmdlets instead of `mkdir` and `copy`
 
 ---
 
-### Troubleshooting Windows Setup
+## 🔧 Troubleshooting Windows Setup
 
 **'dbt' is not recognized after install:**
 ```cmd
@@ -585,7 +543,10 @@ python -m pip install dbt-snowflake
 echo %SNOWFLAKE_ACCOUNT%
 
 # If empty, re-run the set commands (each on its own line!)
-set SNOWFLAKE_ACCOUNT=avc25434.us-east-1
+set SNOWFLAKE_ACCOUNT=ZSPGHZC-HXC41003
+
+# For passwords with special characters, use quotes:
+set "SNOWFLAKE_PASSWORD=your_password_here"
 ```
 
 **dbt debug fails with connection error:**
@@ -612,7 +573,6 @@ healthcare-claims-dbt-project/
 ├── requirements.txt            # Python dependencies
 │
 ├── profiles/                   # Sample dbt profiles
-│   ├── profiles_duckdb.yml
 │   └── profiles_snowflake.yml
 │
 ├── seeds/                      # Static reference data & synthetic source data
@@ -674,8 +634,7 @@ healthcare-claims-dbt-project/
 │
 ├── scripts/                   # Setup and utility scripts
 │   ├── snowflake_setup.sql
-│   ├── generate_synthetic_data.py
-│   └── download_cms_data.sh
+│   └── generate_synthetic_data.py
 │
 ├── docs/                      # Additional documentation
 │   ├── data_dictionary.md
@@ -918,7 +877,7 @@ jobs:
           
       - name: Install dependencies
         run: |
-          pip install -r requirements.txt
+          pip install dbt-snowflake
           
       - name: Run dbt deps
         run: dbt deps
@@ -1019,6 +978,7 @@ RETURNS STRING ->
 ## 📚 Resources
 
 - [dbt Documentation](https://docs.getdbt.com/)
+- [Snowflake Documentation](https://docs.snowflake.com/)
 - [Kimball Dimensional Modeling](https://www.kimballgroup.com/data-warehouse-business-intelligence-resources/kimball-techniques/dimensional-modeling-techniques/)
 - [CMS Synthetic Data](https://www.cms.gov/Research-Statistics-Data-and-Systems/Downloadable-Public-Use-Files/SynPUFs)
 - [SCD Type 2 Explained](docs/scd_type_2_explained.md)
@@ -1029,4 +989,4 @@ MIT License - see [LICENSE](LICENSE) for details.
 
 ---
 
-**Built for demonstrating healthcare data engineering best practices.**
+**Built for demonstrating healthcare data engineering best practices with Snowflake.**
